@@ -1,0 +1,188 @@
+---
+title: "Enhanced Interpersonal Therapy: Study of the adaptation of the IPT technique proposed by TELEPSI"
+subtitle: "Data analysis code"
+author:
+  - name: Bruno Braga Montezano
+    id: bm
+    orcid: 0000-0002-4627-1776
+    email: bmontezano@hcpa.edu.br
+    affiliation: 
+      - name: Federal University of Rio Grande do Sul
+        city: Porto Alegre
+        state: RS
+        url: https://www.ufrgs.br/ppgpsiquiatria/
+license: "CC BY"
+copyright: 
+  holder: Bruno Braga Montezano
+  year: 2025
+date: today
+lang: en
+theme: journal
+execute:
+  message: false
+format:
+  html:
+    code-fold: true
+---
+
+# Intro
+
+TODO.
+
+# Descriptive data
+
+```{r descriptive-table}
+df <- suppressWarnings(readxl::read_xlsx("./data/df_complete.xlsx"))
+
+tip_df <- df |>
+  dplyr::filter(RND_RAND_TTO == "TIP") |>
+  dplyr::mutate(
+    Sexo = table1::setLabel(Sexo, "Gender"),
+    Idade = table1::setLabel(Idade, "Age"),
+    Essenciais = table1::setLabel(Essenciais, "Occupational category"),
+    G_NPS1 = table1::setLabel(
+      G_NPS1,
+      "How likely are you to recommend this treatment to a friend or colleague?"
+    ),
+    G_TRAT = table1::setLabel(
+      G_TRAT,
+      "How satisfied are you with the treatment?"
+    ),
+    G_PERC = table1::setLabel(
+      G_PERC,
+      paste0(
+        "Considering your perception of your emotional state, how do you ",
+        "feel today about starting treatment?"
+      )
+    ),
+  )
+
+table1::table1(
+  ~ Sexo + Idade + Essenciais + G_NPS1 + G_TRAT + G_PERC,
+  data = tip_df
+)
+```
+
+# PROMIS outcomes
+
+```{r promis}
+promis_df <- tip_df |>
+  dplyr::select(
+    ID,
+    dplyr::matches("(B|G|H|I)_PROMIS_(DEP|ANX|IRR|SLEEP)$")
+  ) |>
+  tidyr::pivot_longer(
+    cols = c(dplyr::everything(), -ID),
+    names_pattern = "(.)_PROMIS_(.*)$",
+    names_to = c("time", "outcome"),
+    values_to = "score"
+  ) |>
+  dplyr::mutate(
+    time = factor(time, levels = c("B", "G", "H", "I")),
+    outcome = as.factor(outcome)
+  )
+```
+
+## Depression
+
+### All rows
+
+```{r promis-dep-itt}
+rcompanion::groupwiseMean(
+  score ~ time,
+  data = promis_df |> dplyr::filter(outcome == "DEP"),
+  na.rm = TRUE
+)
+```
+
+### Complete rows (per-protocol)
+
+```{r promis-dep-pp}
+rcompanion::groupwiseMean(
+  score ~ time,
+  data = promis_df |>
+    dplyr::filter(outcome == "DEP") |>
+    dplyr::group_by(ID) |>
+    dplyr::filter(all(!is.na(score))) |>
+    dplyr::ungroup(),
+  na.rm = TRUE
+)
+```
+
+## Anxiety
+
+### All rows
+
+```{r promis-anx-itt}
+rcompanion::groupwiseMean(
+  score ~ time,
+  data = promis_df |> dplyr::filter(outcome == "ANX"),
+  na.rm = TRUE
+)
+```
+
+### Complete rows (per-protocol)
+
+```{r promis-anx-pp}
+rcompanion::groupwiseMean(
+  score ~ time,
+  data = promis_df |>
+    dplyr::filter(outcome == "ANX") |>
+    dplyr::group_by(ID) |>
+    dplyr::filter(all(!is.na(score))) |>
+    dplyr::ungroup(),
+  na.rm = TRUE
+)
+```
+
+## Irritability
+
+### All rows
+
+```{r promis-irr-itt}
+rcompanion::groupwiseMean(
+  score ~ time,
+  data = promis_df |> dplyr::filter(outcome == "IRR"),
+  na.rm = TRUE
+)
+```
+
+### Complete rows (per-protocol)
+
+```{r promis-irr-pp}
+rcompanion::groupwiseMean(
+  score ~ time,
+  data = promis_df |>
+    dplyr::filter(outcome == "IRR") |>
+    dplyr::group_by(ID) |>
+    dplyr::filter(all(!is.na(score))) |>
+    dplyr::ungroup(),
+  na.rm = TRUE
+)
+```
+
+## Sleep
+
+### All rows
+
+```{r promis-sleep-itt}
+rcompanion::groupwiseMean(
+  score ~ time,
+  data = promis_df |> dplyr::filter(outcome == "SLEEP"),
+  na.rm = TRUE
+)
+```
+
+### Complete rows (per-protocol)
+
+```{r promis-sleep-pp}
+rcompanion::groupwiseMean(
+  score ~ time,
+  data = promis_df |>
+    dplyr::filter(outcome == "SLEEP") |>
+    dplyr::group_by(ID) |>
+    dplyr::filter(all(!is.na(score))) |>
+    dplyr::ungroup(),
+  na.rm = TRUE
+)
+```
