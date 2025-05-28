@@ -11,6 +11,8 @@ author:
         city: Porto Alegre
         state: RS
         url: https://www.ufrgs.br/ppgpsiquiatria/
+  - name: Ana Luiza da Silva Ache
+  - name: Marcelo Fleck
 license: "CC BY"
 copyright: 
   holder: Bruno Braga Montezano
